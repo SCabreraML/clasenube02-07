@@ -3,7 +3,6 @@ import mysql.connector
 
 app = Flask(__name__)
 
-# Configuración de la base de datos
 DB_CONFIG = {
     "host": "db",
     "user": "root",
@@ -11,6 +10,7 @@ DB_CONFIG = {
     "database": "empresa"
 }
 
+# Modificamos el diseño para incluir una tabla estilizada
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
@@ -26,7 +26,7 @@ HTML_TEMPLATE = """
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         .container {
             background-color: #fff;
@@ -34,36 +34,31 @@ HTML_TEMPLATE = """
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
-            max-width: 500px;
+            max-width: 700px;
             width: 100%;
+            margin: 20px;
         }
-        h1 {
-            color: #333;
+        h1 { color: #333; }
+        .status { margin: 1rem 0; padding: 0.5rem; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        
+        /* Estilos para la tabla de datos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
         }
-        .status {
-            margin: 1rem 0;
-            padding: 0.5rem;
-            border-radius: 5px;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
+        th, td {
+            padding: 12px;
             text-align: left;
+            border-bottom: 1px solid #ddd;
         }
-        li {
-            background: #e9ecef;
-            margin: 0.5rem 0;
-            padding: 0.5rem 1rem;
-            border-radius: 3px;
+        th {
+            background-color: #007bff;
+            color: white;
         }
+        tr:hover { background-color: #f5f5f5; }
     </style>
 </head>
 <body>
@@ -79,12 +74,27 @@ HTML_TEMPLATE = """
                 <strong>Conexión exitosa a MySQL</strong>
             </div>
 
-            <h3>Datos desde la base de datos:</h3>
-            <ul>
-                {% for dato in datos %}
-                    <li>{{ dato[1] }}</li>
-                {% endfor %}
-            </ul>
+            <h3>Listado de Personal</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Empleado</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Cargo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in datos %}
+                        <tr>
+                            <td>{{ dato[0] }}</td>
+                            <td>{{ dato[1] }}</td>
+                            <td>{{ dato[2] }}</td>
+                            <td>{{ dato[3] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% endif %}
     </div>
 </body>
@@ -98,7 +108,8 @@ def inicio():
     try:
         con = mysql.connector.connect(**DB_CONFIG)
         cursor = con.cursor()
-        cursor.execute("SELECT * FROM datos")
+        # Pedimos las columnas específicas en orden
+        cursor.execute("SELECT id_empleado, nombre, apellido, cargo FROM datos")
         datos = cursor.fetchall()
         cursor.close()
         con.close()
