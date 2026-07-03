@@ -11,6 +11,8 @@ services:
       MYSQL_DATABASE: "empresa"
     ports:
       - "3350:3306"
+    volumes:
+      - ./empresa.sql:/docker-entrypoint-initdb.d/init.sql
   
 
   app:
