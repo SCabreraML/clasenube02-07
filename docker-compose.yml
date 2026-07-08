@@ -11,7 +11,14 @@ services:
       MYSQL_DATABASE: "empresa"
     ports:
       - "3350:3306"
-  
+    volumes:
+      - ./empresa.sql:/docker-entrypoint-initdb.d/init.sql
+    # 👇 ESTO LE ENSEÑA A DOCKER CÓMO SABER SI MYSQL YA TERMINÓ
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
+      timeout: 10s
+      retries: 10
+      interval: 5s
 
   app:
     build: .
@@ -19,5 +26,7 @@ services:
     restart: always
     ports:
       - "8081:5000"
+    # 👇 MODIFICADO: Ahora espera a que el healthcheck de arriba sea "healthy"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
